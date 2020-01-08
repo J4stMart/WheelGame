@@ -104,7 +104,7 @@ public class WheelController : MonoBehaviour
         }
         else
         {
-            velocity.x = Mathf.Lerp(velocity.x, 0, momentumReduction * Time.deltaTime);
+            velocity.x = Mathf.Lerp(velocity.x, 0, momentumReduction / 3f * Time.deltaTime);
         }
     }
 
