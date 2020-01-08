@@ -2,121 +2,182 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class WheelController : PhysicsObject
+[RequireComponent(typeof(Rigidbody2D))]
+public class WheelController : MonoBehaviour
 {
+
+    public float minGroundNormal = 48f;
+    public float gravityMultiplier = 1f;
+    public bool physicsActive = true;
+
+    protected Vector2 targetVelocity;
+    protected bool grounded;
+    protected Vector2 groundNormal = Vector2.up;
+    protected Rigidbody2D rb2d;
+    protected Vector2 velocity;
+    protected ContactFilter2D contactFilter;
+    protected RaycastHit2D[] hitBuffer = new RaycastHit2D[16];
+    protected List<RaycastHit2D> hitBufferList = new List<RaycastHit2D>(16);
+
+    protected const float minMoveDistance = 0.001f;
+    protected const float shellRadius = 0.01f;
+
+    protected bool parentHackHitWall = false;
 
     public float maxSpeed = 7;
     public float jumpTakeOffSpeed = 7;
-    public float chargeForce;
     public bool flipped;
-    public float momentumReduction;
-    public float wallMomentumLoss;
-    Vector2 move = Vector2.zero;
     float charge = 0;
+    public float wallmomentumLoss = .1f;
+    public float chargeForce = 1.5f;
+    public float momentumReduction = 1;
 
-
-    //public SpriteRenderer spriteRenderer;
-    //private Animator animator;
-
-    // Use this for initialization
-    void Awake()
+    void OnEnable()
     {
-        //spriteRenderer = GetComponent<SpriteRenderer>();
-        //animator = GetComponent<Animator>();
+        rb2d = GetComponent<Rigidbody2D>();
     }
 
-    protected override void ComputeVelocity()
+    protected virtual void Start()
     {
-        move.y = 0;
+        contactFilter.useTriggers = false;
+        contactFilter.SetLayerMask(Physics2D.GetLayerCollisionMask(gameObject.layer));
+        contactFilter.useLayerMask = true;
+    }
 
-        if(move.x < 0.001f && move.x > -0.001f)
+    void Update()
+    {
+        targetVelocity = Vector2.zero;
+
+        if (physicsActive)
+            ComputeVelocity();
+    }
+
+    private void ComputeVelocity()
+    {
+        if (Mathf.Abs(0 - velocity.x) < 0.001f)
         {
-            move.x = 0;
+            velocity.x = 0;
         }
 
-        if(parentHackHitWall)
+        if (parentHackHitWall)
         {
-            move.x *= -1;
+            velocity.x *= -1;
             parentHackHitWall = false;
-            gravityVelocity.y = jumpTakeOffSpeed / 2;
+            velocity.y = jumpTakeOffSpeed / 2;
 
-            if (move.x > 0)
+            if(velocity.x > 0)
             {
-                move.x -= wallMomentumLoss ;
+                velocity.x -= wallmomentumLoss;
             }
-            else if (move.x < 0)
+            else
             {
-                move.x += wallMomentumLoss ;
+                velocity.x += wallmomentumLoss;
             }
-
         }
 
-        if(Input.GetKey(KeyCode.Space) && move.x == 0)
+        if (Input.GetKey(KeyCode.Space) && velocity.x == 0)
         {
             charge += Time.deltaTime * chargeForce;
         }
-        else if (Input.GetKeyUp(KeyCode.Space) && move.x == 0)
+        else if (Input.GetKeyUp(KeyCode.Space) && velocity.x == 0)
         {
-            move.x = charge;
+            velocity.x = charge * maxSpeed;
         }
 
         if (Input.GetButtonDown("Left"))
         {
-            move.x = -Mathf.Abs(move.x);
+            velocity.x = -Mathf.Abs(velocity.x);
         }
         if (Input.GetButtonDown("Right"))
         {
-            move.x = Mathf.Abs(move.x);
+            velocity.x = Mathf.Abs(velocity.x);
         }
 
-
-        if (Input.GetButtonDown("Jump") && grounded && move.x != 0)
+        if (Input.GetButtonDown("Jump") && grounded && velocity.x != 0)
         {
-            gravityVelocity.y = jumpTakeOffSpeed;
+            velocity.y = jumpTakeOffSpeed;
         }
-        /*else if (Input.GetButtonUp("Jump"))
+
+        if(grounded)
         {
-            if (gravityVelocity.y > 0)
-            {
-                gravityVelocity.y *= 0.5f;
-            }
-        }
-*/
-        //bool flipSprite = (!flipped ? (move.x > 0f) : (move.x < 0f));
-        //if (flipSprite)
-        //{
-        //    transform.localScale = new Vector3(transform.localScale.x * -1f, transform.localScale.y);
-        //    flipped = !flipped;
-        //}
-
-        //animator.SetBool("grounded", grounded);
-        //animator.SetFloat("velocityX", Mathf.Abs(velocity.x) / maxSpeed);
-
-        targetVelocity = move * maxSpeed;
-
-        if (grounded)
-        {
-            if (move.x > 0)
-            {
-                move.x -= momentumReduction * Time.deltaTime;
-            }
-            else if (move.x < 0)
-            {
-                move.x += momentumReduction * Time.deltaTime;
-            }
+            velocity.x = Mathf.Lerp(velocity.x, 0, momentumReduction * Time.deltaTime);
         }
         else
         {
-            if (move.x > 0)
+            velocity.x = Mathf.Lerp(velocity.x, 0, momentumReduction * Time.deltaTime);
+        }
+    }
+
+    private void FixedUpdate()
+    {
+        velocity += gravityMultiplier * Physics2D.gravity * Time.deltaTime;
+
+        grounded = false;
+
+        Vector2 deltaPosition = velocity * Time.deltaTime;
+
+        Vector2 moveAlongGround = new Vector2(groundNormal.y, -groundNormal.x);
+
+        Vector2 move = moveAlongGround * deltaPosition.x;
+
+        Movement(move, false);
+
+        move = Vector2.up * deltaPosition.y;
+
+        Movement(move, true);
+    }
+
+    void Movement(Vector2 move, bool yMovement)
+    {
+        float distance = move.magnitude;
+
+        if (distance > minMoveDistance)
+        {
+            int count = rb2d.Cast(move, contactFilter, hitBuffer, distance + shellRadius);
+            hitBufferList.Clear();
+            for (int i = 0; i < count; i++)
             {
-                move.x -= momentumReduction/2 * Time.deltaTime;
+                hitBufferList.Add(hitBuffer[i]);
             }
-            else if (move.x < 0)
+
+            for (int i = 0; i < hitBufferList.Count; i++)
             {
-                move.x += momentumReduction/2 * Time.deltaTime;
+                Vector2 currentNormal = hitBufferList[i].normal;
+                if (Vector2.Angle(currentNormal, transform.up) < minGroundNormal)
+                {
+                    grounded = true;
+                    if (yMovement)
+                    {
+                        groundNormal = currentNormal;
+                        currentNormal.x = 0;
+                    }
+                }
+
+                if (yMovement)
+                {
+                    float projection = Vector2.Dot(velocity, currentNormal);
+                    if (projection < 0)
+                    {
+                        velocity.y = 0;
+                    }
+                }
+
+                float modifiedDistance = hitBufferList[i].distance - shellRadius;
+
+                if (modifiedDistance < distance)
+                {
+                    if (!yMovement)
+                    {
+                        parentHackHitWall = true;
+                    }
+
+                    distance = modifiedDistance;
+                }
             }
+
+
         }
 
-
+        rb2d.position = rb2d.position + move.normalized * distance;
     }
 }

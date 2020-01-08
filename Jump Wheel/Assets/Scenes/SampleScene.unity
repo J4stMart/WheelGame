@@ -2543,8 +2543,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 519420028}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0.01, y: 0.34, z: -0.1557431}
-  m_LocalScale: {x: 0.12702604, y: 0.12702604, z: 0.12702604}
+  m_LocalPosition: {x: -0.113471285, y: 3.8580246, z: -1.7672377}
+  m_LocalScale: {x: 1.441381, y: 1.441381, z: 1.441381}
   m_Children: []
   m_Father: {fileID: 1945677858}
   m_RootOrder: 0
@@ -2607,7 +2607,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
+  m_Sprite: {fileID: 21300000, guid: 039081862917a5447bcf445bf375edb8, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -2627,7 +2627,7 @@ Transform:
   m_GameObject: {fileID: 1945677856}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -0.25, y: -2.57, z: -8.773928}
-  m_LocalScale: {x: 7.872402, y: 7.872402, z: 7.872402}
+  m_LocalScale: {x: 0.39529693, y: 0.39529693, z: 0.39529693}
   m_Children:
   - {fileID: 519420032}
   m_Father: {fileID: 0}
@@ -2648,7 +2648,7 @@ CircleCollider2D:
   m_UsedByComposite: 0
   m_Offset: {x: 0, y: 0}
   serializedVersion: 2
-  m_Radius: 0.09284089
+  m_Radius: 2.2984781
 --- !u!50 &1945677860
 Rigidbody2D:
   serializedVersion: 4
@@ -2683,14 +2683,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   minGroundNormal: 48
-  gravityModifier: 1
+  gravityMultiplier: 1
   physicsActive: 1
   maxSpeed: 7
   jumpTakeOffSpeed: 9
-  chargeForce: 2
   flipped: 0
-  momentumReduction: 0.1
-  wallMomentumLoss: 0.2
+  wallmomentumLoss: 0.1
+  chargeForce: 1.5
+  momentumReduction: 1
 --- !u!1 &1984573631
 GameObject:
   m_ObjectHideFlags: 0
