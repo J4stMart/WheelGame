@@ -54,7 +54,7 @@ public class WheelController : MonoBehaviour
 
     private void ComputeVelocity()
     {
-        if (Mathf.Abs(0 - velocity.x) < 0.001f)
+        if (Mathf.Abs(velocity.x) < 1f)
         {
             velocity.x = 0;
         }
