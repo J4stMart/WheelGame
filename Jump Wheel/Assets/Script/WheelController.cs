@@ -29,6 +29,8 @@ public class WheelController : MonoBehaviour
     public float wallmomentumLoss = .1f;
     public float chargeForce = 1.5f;
     public float momentumReduction = 1;
+    public GameObject sprite;
+    private float wheelVelocity; //for rotation
 
     private float distanceFullRotation;
 
@@ -52,7 +54,8 @@ public class WheelController : MonoBehaviour
         if (physicsActive)
             ComputeVelocity();
 
-
+        if(wheelVelocity != 0)
+        sprite.transform.Rotate(Vector3.forward, -wheelVelocity * Time.deltaTime / distanceFullRotation * 360);
     }
 
     private void ComputeVelocity()
@@ -60,11 +63,13 @@ public class WheelController : MonoBehaviour
         if (Mathf.Abs(velocity.x) < 1f)
         {
             velocity.x = 0;
+            wheelVelocity = 0;
         }
 
         if (Input.GetKey(KeyCode.Space) && velocity.x == 0)
         {
             charge += Time.deltaTime * chargeForce;
+            wheelVelocity = charge * maxSpeed;
         }
         else if (Input.GetKeyUp(KeyCode.Space) && velocity.x == 0)
         {
@@ -88,6 +93,8 @@ public class WheelController : MonoBehaviour
         if (grounded)
         {
             velocity.x = Mathf.Lerp(velocity.x, 0, momentumReduction * Time.deltaTime);
+            if (velocity.x != 0)
+                wheelVelocity = velocity.x;
         }
         else
         {
@@ -152,7 +159,7 @@ public class WheelController : MonoBehaviour
                 {
                     //hit wall
                     currentNormal.x = Mathf.Abs(currentNormal.x);
-                    if(Vector2.Angle(currentNormal, Vector2.right) < minWallNormal)
+                    if (Vector2.Angle(currentNormal, Vector2.right) < minWallNormal)
                     {
                         velocity.x *= -1;
                         velocity.y = jumpTakeOffSpeed / 2;
