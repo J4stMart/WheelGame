@@ -4010,6 +4010,7 @@ MonoBehaviour:
   wallmomentumLoss: 0.3
   chargeForce: 3
   momentumReduction: 0.1
+  sprite: {fileID: 1206638764}
 --- !u!1 &1984573631
 GameObject:
   m_ObjectHideFlags: 0
