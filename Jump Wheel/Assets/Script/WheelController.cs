@@ -66,12 +66,12 @@ public class WheelController : MonoBehaviour
             wheelVelocity = 0;
         }
 
-        if (Input.GetKey(KeyCode.Space) && velocity.x == 0)
+        if ((Input.GetKey(KeyCode.Space) || Input.GetButton("Down")) && velocity.x == 0)
         {
             charge += Time.deltaTime * chargeForce;
             wheelVelocity = charge * maxSpeed;
         }
-        else if (Input.GetKeyUp(KeyCode.Space) && velocity.x == 0)
+        else if ((Input.GetKeyUp(KeyCode.Space) || Input.GetButtonUp("Down")) && velocity.x == 0)
         {
             velocity.x = charge * maxSpeed;
         }
