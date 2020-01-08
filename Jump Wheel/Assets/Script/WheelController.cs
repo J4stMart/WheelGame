@@ -7,10 +7,10 @@ public class WheelController : MonoBehaviour
 {
 
     public float minGroundNormal = 48f;
+    public float minWallNormal = 45f;
     public float gravityMultiplier = 1f;
     public bool physicsActive = true;
 
-    protected Vector2 targetVelocity;
     protected bool grounded;
     protected Vector2 groundNormal = Vector2.up;
     protected Rigidbody2D rb2d;
@@ -22,8 +22,6 @@ public class WheelController : MonoBehaviour
     protected const float minMoveDistance = 0.001f;
     protected const float shellRadius = 0.01f;
 
-    protected bool parentHackHitWall = false;
-
     public float maxSpeed = 7;
     public float jumpTakeOffSpeed = 7;
     public bool flipped;
@@ -32,24 +30,29 @@ public class WheelController : MonoBehaviour
     public float chargeForce = 1.5f;
     public float momentumReduction = 1;
 
+    private float distanceFullRotation;
+
     void OnEnable()
     {
         rb2d = GetComponent<Rigidbody2D>();
     }
 
-    protected virtual void Start()
+    void Start()
     {
         contactFilter.useTriggers = false;
         contactFilter.SetLayerMask(Physics2D.GetLayerCollisionMask(gameObject.layer));
         contactFilter.useLayerMask = true;
+
+        var circleCollider = GetComponent<CircleCollider2D>();
+        distanceFullRotation = 2 * circleCollider.bounds.extents[0] * Mathf.PI;
     }
 
     void Update()
     {
-        targetVelocity = Vector2.zero;
-
         if (physicsActive)
             ComputeVelocity();
+
+
     }
 
     private void ComputeVelocity()
@@ -57,22 +60,6 @@ public class WheelController : MonoBehaviour
         if (Mathf.Abs(velocity.x) < 1f)
         {
             velocity.x = 0;
-        }
-
-        if (parentHackHitWall)
-        {
-            velocity.x *= -1;
-            parentHackHitWall = false;
-            velocity.y = jumpTakeOffSpeed / 2;
-
-            if(velocity.x > 0)
-            {
-                velocity.x -= wallmomentumLoss;
-            }
-            else
-            {
-                velocity.x += wallmomentumLoss;
-            }
         }
 
         if (Input.GetKey(KeyCode.Space) && velocity.x == 0)
@@ -98,7 +85,7 @@ public class WheelController : MonoBehaviour
             velocity.y = jumpTakeOffSpeed;
         }
 
-        if(grounded)
+        if (grounded)
         {
             velocity.x = Mathf.Lerp(velocity.x, 0, momentumReduction * Time.deltaTime);
         }
@@ -143,7 +130,7 @@ public class WheelController : MonoBehaviour
             for (int i = 0; i < hitBufferList.Count; i++)
             {
                 Vector2 currentNormal = hitBufferList[i].normal;
-                if (Vector2.Angle(currentNormal, transform.up) < minGroundNormal)
+                if (Vector2.Angle(currentNormal, Vector2.up) < minGroundNormal)
                 {
                     grounded = true;
                     if (yMovement)
@@ -161,21 +148,31 @@ public class WheelController : MonoBehaviour
                         velocity.y = 0;
                     }
                 }
+                else
+                {
+                    //hit wall
+                    currentNormal.x = Mathf.Abs(currentNormal.x);
+                    if(Vector2.Angle(currentNormal, Vector2.right) < minWallNormal)
+                    {
+                        velocity.x *= -1;
+                        velocity.y = jumpTakeOffSpeed / 2;
+
+                        if (velocity.x > 0)
+                        {
+                            velocity.x -= wallmomentumLoss;
+                        }
+                        else
+                        {
+                            velocity.x += wallmomentumLoss;
+                        }
+                    }
+                }
 
                 float modifiedDistance = hitBufferList[i].distance - shellRadius;
 
                 if (modifiedDistance < distance)
-                {
-                    if (!yMovement)
-                    {
-                        parentHackHitWall = true;
-                    }
-
                     distance = modifiedDistance;
-                }
             }
-
-
         }
 
         rb2d.position = rb2d.position + move.normalized * distance;
