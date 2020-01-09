@@ -75,7 +75,7 @@ public class WheelController : MonoBehaviour
 
         if (wheelVelocity != 0)
             sprite.transform.Rotate(Vector3.forward, -wheelVelocity * Time.deltaTime / distanceFullRotation * 360);
-        Debug.Log(facingLeft);
+
     }
 
     private void ComputeVelocity()
@@ -94,6 +94,7 @@ public class WheelController : MonoBehaviour
         else if ((Input.GetKeyUp(KeyCode.Space) || Input.GetButtonUp("Up")) && velocity.x == 0)
         {
             velocity.x = charge * maxSpeed;
+            charge = 0;
         }
 
         if (Input.GetButtonDown("Left") && !airTurn)
@@ -128,16 +129,17 @@ public class WheelController : MonoBehaviour
 
         if (grounded)
         {
-            velocity.x = Mathf.Lerp(velocity.x, 0, momentumReduction * Time.deltaTime);
-
             if (velocity.x != 0)
+            {
+                velocity.x -= Mathf.Sign(velocity.x) * momentumReduction * Time.deltaTime;
                 wheelVelocity = velocity.x;
+            }
 
             airTurn = false;
         }
         else
         {
-            velocity.x = Mathf.Lerp(velocity.x, 0, momentumReduction / 3f * Time.deltaTime);
+            velocity.x -= Mathf.Sign(velocity.x) * momentumReduction / 5 * Time.deltaTime;
         }
     }
 
