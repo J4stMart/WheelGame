@@ -14,12 +14,13 @@ public class WheelController : MonoBehaviour
     protected bool grounded;
     private bool airTurn; //I made this bool to check if the player has already turned orientation in air, so they can only turn once in the air.
     private bool facingLeft; //This one I made to check the orientation the player is facing. True = facing left, False = facing right
-    public bool _facingLeft
+
+    public bool FacingLeft
     {
         get { return facingLeft; }
         set
         {
-            if(facingLeft != value)
+            if (facingLeft != value)
             {
                 facingLeft = value;
                 if (!grounded)
@@ -29,6 +30,7 @@ public class WheelController : MonoBehaviour
             }
         }
     }
+
     protected Vector2 groundNormal = Vector2.up;
     protected Rigidbody2D rb2d;
     protected Vector2 velocity;
@@ -71,20 +73,9 @@ public class WheelController : MonoBehaviour
         if (physicsActive)
             ComputeVelocity();
 
-        if(wheelVelocity != 0)
-        sprite.transform.Rotate(Vector3.forward, -wheelVelocity * Time.deltaTime / distanceFullRotation * 360);
+        if (wheelVelocity != 0)
+            sprite.transform.Rotate(Vector3.forward, -wheelVelocity * Time.deltaTime / distanceFullRotation * 360);
         Debug.Log(facingLeft);
-
-        if(velocity.x > 0)
-        {
-            if(facingLeft)
-                facingLeft = false;
-        }
-        else if(velocity.x < 0)
-        {
-            if(!facingLeft)
-                facingLeft = true;
-        }
     }
 
     private void ComputeVelocity()
@@ -108,19 +99,19 @@ public class WheelController : MonoBehaviour
         if (Input.GetButtonDown("Left") && !airTurn)
         {
             velocity.x = -Mathf.Abs(velocity.x);
-            if (!facingLeft)
-                _facingLeft = true;
+
+            FacingLeft = true;
         }
         if (Input.GetButtonDown("Right") && !airTurn)
         {
             velocity.x = Mathf.Abs(velocity.x);
-            if (facingLeft)
-                _facingLeft = false;
+
+            FacingLeft = false;
         }
 
         if (Input.GetButton("Down") && velocity.x != 0 && grounded)
         {
-            if(velocity.x > 0)
+            if (velocity.x > 0)
             {
                 velocity.x -= Time.deltaTime * 30;
             }
@@ -138,22 +129,15 @@ public class WheelController : MonoBehaviour
         if (grounded)
         {
             velocity.x = Mathf.Lerp(velocity.x, 0, momentumReduction * Time.deltaTime);
+
             if (velocity.x != 0)
                 wheelVelocity = velocity.x;
 
-            if (airTurn)
-            {
-                airTurn = false;
-            }
+            airTurn = false;
         }
         else
         {
             velocity.x = Mathf.Lerp(velocity.x, 0, momentumReduction / 3f * Time.deltaTime);
-
-            if (!airTurn)
-            {
-                
-            }
         }
     }
 
@@ -217,6 +201,8 @@ public class WheelController : MonoBehaviour
                     if (Vector2.Angle(currentNormal, Vector2.right) < minWallNormal)
                     {
                         velocity.x *= -1;
+                        facingLeft = !facingLeft;
+
                         velocity.y = jumpTakeOffSpeed / 2;
 
                         if (velocity.x > 0)
