@@ -37,7 +37,7 @@ public class WheelController : MonoBehaviour
     protected List<RaycastHit2D> hitBufferList = new List<RaycastHit2D>(16);
 
     protected const float minMoveDistance = 0.001f;
-    protected const float shellRadius = 0.01f;
+    protected const float shellRadius = 0.05f;
 
     public float maxSpeed = 7;
     public float jumpTakeOffSpeed = 7;
