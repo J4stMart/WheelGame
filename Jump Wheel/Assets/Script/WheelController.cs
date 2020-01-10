@@ -86,12 +86,12 @@ public class WheelController : MonoBehaviour
             wheelVelocity = 0;
         }
 
-        if ((Input.GetButton("Left")) || Input.GetButton("Right") && velocity.x == 0)
+        if ((Input.GetButton("Left") || Input.GetButton("Right")) && velocity.x == 0)
         {
             charge += Time.deltaTime * chargeForce;
             wheelVelocity = charge * maxSpeed;
         }
-        else if ((Input.GetButtonUp("Left")) || Input.GetButtonUp("Right") && velocity.x == 0 && grounded)
+        else if ((Input.GetButtonUp("Left") || Input.GetButtonUp("Right")) && velocity.x == 0 && grounded)
         {
             if (facingLeft)
             {
@@ -106,15 +106,13 @@ public class WheelController : MonoBehaviour
 
         if (Input.GetButtonDown("Left") && !airTurn)
         {
-            if (velocity.x >= 0)
-                FacingLeft = true;
+            FacingLeft = true;
 
             velocity.x = -Mathf.Abs(velocity.x);
         }
         if (Input.GetButtonDown("Right") && !airTurn)
         {
-            if (velocity.x <= 0)
-                FacingLeft = false;
+            FacingLeft = false;
 
             velocity.x = Mathf.Abs(velocity.x);
         }
