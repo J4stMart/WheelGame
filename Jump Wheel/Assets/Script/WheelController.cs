@@ -10,6 +10,7 @@ public class WheelController : MonoBehaviour
     public float minGroundNormal = 48f;
     public float minWallNormal = 45f;
     public float gravityMultiplier = 1f;
+    public float maxCharge;
     public bool physicsActive = true;
 
     protected bool grounded;
@@ -76,6 +77,7 @@ public class WheelController : MonoBehaviour
             sprite.transform.Rotate(Vector3.forward, -wheelVelocity * Time.deltaTime / distanceFullRotation * 360);
 
         arrowSprite.flipY = facingLeft;
+        charge = Mathf.Min(charge, maxCharge);
     }
 
     private void ComputeVelocity()
@@ -91,7 +93,7 @@ public class WheelController : MonoBehaviour
             charge += Time.deltaTime * chargeForce;
             wheelVelocity = charge * maxSpeed;
         }
-        else if ((Input.GetButtonUp("Left")) || Input.GetButtonUp("Right") && velocity.x == 0 && grounded)
+        else if ((Input.GetButtonUp("Left") || Input.GetButtonUp("Right")) && velocity.x == 0 && grounded)
         {
             if (facingLeft)
             {
