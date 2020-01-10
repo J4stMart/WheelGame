@@ -20,13 +20,10 @@ public class WheelController : MonoBehaviour
         get { return facingLeft; }
         set
         {
-            if (facingLeft != value)
+            facingLeft = value;
+            if (!grounded)
             {
-                facingLeft = value;
-                if (!grounded)
-                {
-                    airTurn = true;
-                }
+                airTurn = true;
             }
         }
     }
@@ -50,6 +47,7 @@ public class WheelController : MonoBehaviour
     public float momentumReduction = 1;
     public GameObject sprite;
     private float wheelVelocity; //for rotation
+    public SpriteRenderer arrowSprite; //temporay arrow speed to easily see which way the player is facing;
 
     private float distanceFullRotation;
 
@@ -76,6 +74,7 @@ public class WheelController : MonoBehaviour
         if (wheelVelocity != 0)
             sprite.transform.Rotate(Vector3.forward, -wheelVelocity * Time.deltaTime / distanceFullRotation * 360);
 
+        arrowSprite.flipY = facingLeft;
     }
 
     private void ComputeVelocity()
@@ -93,21 +92,30 @@ public class WheelController : MonoBehaviour
         }
         else if ((Input.GetKeyUp(KeyCode.Space) || Input.GetButtonUp("Up")) && velocity.x == 0)
         {
-            velocity.x = charge * maxSpeed;
+            if (facingLeft)
+            {
+                velocity.x = -charge * maxSpeed;
+            }
+            else
+            {
+                velocity.x = charge * maxSpeed;
+            }
             charge = 0;
         }
 
         if (Input.GetButtonDown("Left") && !airTurn)
         {
-            velocity.x = -Mathf.Abs(velocity.x);
+            if (velocity.x >= 0)
+                FacingLeft = true;
 
-            FacingLeft = true;
+            velocity.x = -Mathf.Abs(velocity.x);
         }
         if (Input.GetButtonDown("Right") && !airTurn)
         {
-            velocity.x = Mathf.Abs(velocity.x);
+            if (velocity.x <= 0)
+                FacingLeft = false;
 
-            FacingLeft = false;
+            velocity.x = Mathf.Abs(velocity.x);
         }
 
         if (Input.GetButton("Down") && velocity.x != 0 && grounded)
@@ -204,7 +212,6 @@ public class WheelController : MonoBehaviour
                     {
                         velocity.x *= -1;
                         facingLeft = !facingLeft;
-
                         velocity.y = jumpTakeOffSpeed / 2;
 
                         if (velocity.x > 0)
