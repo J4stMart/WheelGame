@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 [RequireComponent(typeof(Rigidbody2D))]
 public class WheelController : MonoBehaviour
@@ -133,6 +134,11 @@ public class WheelController : MonoBehaviour
         if (Input.GetButtonDown("Jump") && grounded && velocity.x != 0)
         {
             velocity.y = jumpTakeOffSpeed;
+        }
+
+        if (Input.GetKeyDown(KeyCode.R))
+        {
+            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
         }
 
         if (grounded)
