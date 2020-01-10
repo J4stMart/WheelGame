@@ -212,16 +212,9 @@ public class WheelController : MonoBehaviour
                     {
                         velocity.x *= -1;
                         facingLeft = !facingLeft;
-                        velocity.y = jumpTakeOffSpeed / 2;
 
-                        if (velocity.x > 0)
-                        {
-                            velocity.x -= wallmomentumLoss;
-                        }
-                        else
-                        {
-                            velocity.x += wallmomentumLoss;
-                        }
+                        velocity.y += jumpTakeOffSpeed * (Mathf.Abs(velocity.x) / 100);
+                        velocity.x -= Mathf.Sign(velocity.x) * 2 * jumpTakeOffSpeed * (Mathf.Abs(velocity.x) / 100);
                     }
                 }
 
