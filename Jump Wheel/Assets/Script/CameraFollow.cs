@@ -11,11 +11,14 @@ public class CameraFollow : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        
+
     }
 
     private void FixedUpdate()
     {
-        transform.position = Vector3.Lerp(transform.position, target.position + offset, smoothSpeed * Time.deltaTime);
+        Vector3 targetPosition = target.position + offset;
+        float distance = Vector3.Distance(targetPosition, transform.position);
+
+        transform.position = Vector3.Lerp(transform.position, target.position + offset, (distance / 5) * smoothSpeed * Time.deltaTime);
     }
 }
