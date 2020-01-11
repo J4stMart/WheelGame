@@ -63,7 +63,7 @@ public class WheelController : MonoBehaviour
         {
             if (Input.GetButton("Left") || Input.GetButton("Right"))
             {
-                charge += Time.deltaTime * chargeSpeed;
+                charge += Time.deltaTime * (chargeSpeed + Mathf.Sqrt(charge));
                 charge = Mathf.Clamp(charge, 0, maxCharge);
                 wheelVelocity = charge * speed;
 
