@@ -30,6 +30,15 @@ public class WheelController : MonoBehaviour
     private float distanceFullRotation;
     private float wheelVelocity; //for visual rotation
 
+    enum ChargingState
+    {
+         CantCharge,
+         CanCharge,
+         IsCharging
+    }
+
+    private ChargingState chargingState = ChargingState.CantCharge;
+
     void Start()
     {
         rb2d = GetComponent<Rigidbody2D>();
@@ -53,7 +62,7 @@ public class WheelController : MonoBehaviour
 
     private void ComputeVelocity()
     {
-        if (Mathf.Abs(velocity.x) < 1f)
+        if (Mathf.Abs(velocity.x) < 0.1f)
         {
             velocity.x = 0;
             wheelVelocity = 0;
@@ -61,7 +70,12 @@ public class WheelController : MonoBehaviour
 
         if (velocity.x == 0)
         {
-            if (Input.GetButton("Left") || Input.GetButton("Right"))
+            if ((Input.GetButtonDown("Left") || Input.GetButtonDown("Right")) && chargingState == ChargingState.CanCharge)
+            {
+                chargingState = ChargingState.IsCharging;
+            }
+
+            if ((Input.GetButton("Left") || Input.GetButton("Right")) && chargingState == ChargingState.IsCharging)
             {
                 charge += Time.deltaTime * (chargeSpeed + Mathf.Sqrt(charge));
                 charge = Mathf.Clamp(charge, 0, maxCharge);
@@ -83,14 +97,16 @@ public class WheelController : MonoBehaviour
                 {
                     addVelocity.x = charge * speed;
                 }
+
                 charge = 0;
+                chargingState = ChargingState.CantCharge;
             }
         }
         else
         {
             if (Input.GetButton("Down"))
             {
-                velocity.x -= Mathf.Sign(velocity.x) * Time.deltaTime * 30;
+                addVelocity.x -= Mathf.Sign(velocity.x) * Time.deltaTime * 30;
             }
         }
 
@@ -116,18 +132,25 @@ public class WheelController : MonoBehaviour
         {
             if (velocity.x != 0)
             {
-                velocity.x -= Mathf.Sign(velocity.x) * momentumReduction * Time.deltaTime;
+                addVelocity.x -= Mathf.Sign(velocity.x) * momentumReduction * Time.deltaTime;
                 wheelVelocity = velocity.x;
+            }
+            else
+            {
+                if (chargingState != ChargingState.IsCharging)
+                    chargingState = ChargingState.CanCharge;
             }
 
             if (Input.GetButtonDown("Jump"))
             {
                 addVelocity.y = jumpTakeOffSpeed;
             }
+
+            
         }
         else
         {
-            velocity.x -= Mathf.Sign(velocity.x) * momentumReduction / 5 * Time.deltaTime;
+            addVelocity.x -= Mathf.Sign(velocity.x) * momentumReduction / 5 * Time.deltaTime;
         }
     }
 
@@ -141,6 +164,7 @@ public class WheelController : MonoBehaviour
     private void CheckGrounded()
     {
         RaycastHit2D hit = Physics2D.BoxCast(groundCheck.bounds.center, groundCheck.bounds.size, 0f, Vector2.down, 0f, collisionMask);
+
         grounded = hit.collider != null;
     }
 
