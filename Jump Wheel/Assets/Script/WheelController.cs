@@ -65,7 +65,11 @@ public class WheelController : MonoBehaviour
             {
                 charge += Time.deltaTime * (chargeSpeed + Mathf.Sqrt(charge));
                 charge = Mathf.Clamp(charge, 0, maxCharge);
-                wheelVelocity = charge * speed;
+
+                if (facingLeft)
+                    wheelVelocity = -charge * speed;
+                else
+                    wheelVelocity = charge * speed;
 
                 chargeBar.transform.localScale = new Vector2(charge / maxCharge, 1);
             }
