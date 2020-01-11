@@ -6,50 +6,32 @@ using UnityEngine.SceneManagement;
 [RequireComponent(typeof(Rigidbody2D))]
 public class WheelController : MonoBehaviour
 {
+    public float speed = 7;
+    public float jumpTakeOffSpeed = 9;
+    public float chargeSpeed = 1.5f;
+    public float maxCharge = 13;
+    public float momentumReduction = 5.5f;
+    public BoxCollider2D groundCheck;
+    public BoxCollider2D wallCheckL, wallCheckR;
+    public LayerMask collisionMask;
 
-    public float minGroundNormal = 48f;
-    public float minWallNormal = 45f;
-    public float gravityMultiplier = 1f;
-    public float maxCharge;
-    public bool physicsActive = true;
+    public GameObject sprite;
+    public SpriteRenderer arrowSprite; //temporary arrow to easily see which way the player is facing;
 
-    protected bool grounded;
-    private bool airTurn; //I made this bool to check if the player has already turned orientation in air, so they can only turn once in the air.
+    private Rigidbody2D rb2d;
+    private Vector2 velocity; //Current velocity of the wheel
+    private Vector2 addVelocity; //Velocity that needs to be added once
+
+    private bool grounded;
     private bool facingLeft; //This one I made to check the orientation the player is facing. True = facing left, False = facing right
 
-    protected Vector2 groundNormal = Vector2.up;
-    protected Rigidbody2D rb2d;
-    protected Vector2 velocity;
-    protected ContactFilter2D contactFilter;
-    protected RaycastHit2D[] hitBuffer = new RaycastHit2D[16];
-    protected List<RaycastHit2D> hitBufferList = new List<RaycastHit2D>(16);
-
-    protected const float minMoveDistance = 0.001f;
-    protected const float shellRadius = 0.05f;
-
-    public float maxSpeed = 7;
-    public float jumpTakeOffSpeed = 7;
-    public bool flipped;
-    float charge = 0;
-    public float wallmomentumLoss = .1f;
-    public float chargeForce = 1.5f;
-    public float momentumReduction = 1;
-    public GameObject sprite;
-    private float wheelVelocity; //for rotation
-    public SpriteRenderer arrowSprite; //temporay arrow speed to easily see which way the player is facing;
-
+    private float charge = 0;
     private float distanceFullRotation;
-
-    void OnEnable()
-    {
-        rb2d = GetComponent<Rigidbody2D>();
-    }
+    private float wheelVelocity; //for visual rotation
 
     void Start()
     {
-        contactFilter.useTriggers = false;
-        contactFilter.SetLayerMask(Physics2D.GetLayerCollisionMask(gameObject.layer));
-        contactFilter.useLayerMask = true;
+        rb2d = GetComponent<Rigidbody2D>();
 
         var circleCollider = GetComponent<CircleCollider2D>();
         distanceFullRotation = 2 * circleCollider.bounds.extents[0] * Mathf.PI;
@@ -57,14 +39,15 @@ public class WheelController : MonoBehaviour
 
     void Update()
     {
-        if (physicsActive)
-            ComputeVelocity();
+        CheckGrounded();
+        CheckWalls();
+
+        ComputeVelocity();
 
         if (wheelVelocity != 0)
             sprite.transform.Rotate(Vector3.forward, -wheelVelocity * Time.deltaTime / distanceFullRotation * 360);
 
         arrowSprite.flipY = facingLeft;
-        charge = Mathf.Min(charge, maxCharge);
     }
 
     private void ComputeVelocity()
@@ -75,22 +58,23 @@ public class WheelController : MonoBehaviour
             wheelVelocity = 0;
         }
 
-        if(velocity.x == 0)
+        if (velocity.x == 0)
         {
             if (Input.GetButton("Left") || Input.GetButton("Right"))
             {
-                charge += Time.deltaTime * chargeForce;
-                wheelVelocity = charge * maxSpeed;
+                charge += Time.deltaTime * chargeSpeed;
+                charge = Mathf.Clamp(charge, 0, maxCharge);
+                wheelVelocity = charge * speed;
             }
             else if (Input.GetButtonUp("Left") || Input.GetButtonUp("Right"))
             {
                 if (facingLeft)
                 {
-                    velocity.x = -charge * maxSpeed;
+                    addVelocity.x = -charge * speed;
                 }
                 else
                 {
-                    velocity.x = charge * maxSpeed;
+                    addVelocity.x = charge * speed;
                 }
                 charge = 0;
             }
@@ -103,7 +87,7 @@ public class WheelController : MonoBehaviour
             }
         }
 
-        if (Input.GetButtonDown("Left") && (grounded || velocity.x ==0))
+        if (Input.GetButtonDown("Left") && (grounded || velocity.x == 0))
         {
             facingLeft = true;
 
@@ -131,10 +115,8 @@ public class WheelController : MonoBehaviour
 
             if (Input.GetButtonDown("Jump"))
             {
-                velocity.y = jumpTakeOffSpeed;
+                addVelocity.y = jumpTakeOffSpeed;
             }
-
-            airTurn = false;
         }
         else
         {
@@ -144,78 +126,31 @@ public class WheelController : MonoBehaviour
 
     private void FixedUpdate()
     {
-        velocity += gravityMultiplier * Physics2D.gravity * Time.deltaTime;
-
-        grounded = false;
-
-        Vector2 deltaPosition = velocity * Time.deltaTime;
-
-        Vector2 moveAlongGround = new Vector2(groundNormal.y, -groundNormal.x);
-
-        Vector2 move = moveAlongGround * deltaPosition.x;
-
-        Movement(move, false);
-
-        move = Vector2.up * deltaPosition.y;
-
-        Movement(move, true);
+        rb2d.velocity = new Vector2(velocity.x + addVelocity.x, rb2d.velocity.y + addVelocity.y);
+        velocity = rb2d.velocity;
+        addVelocity = Vector2.zero;
     }
 
-    void Movement(Vector2 move, bool yMovement)
+    private void CheckGrounded()
     {
-        float distance = move.magnitude;
+        RaycastHit2D hit = Physics2D.BoxCast(groundCheck.bounds.center, groundCheck.bounds.size, 0f, Vector2.down, 0f, collisionMask);
+        grounded = hit.collider != null;
+    }
 
-        if (distance > minMoveDistance)
+    private void CheckWalls()
+    {
+        RaycastHit2D hit = Physics2D.BoxCast(wallCheckL.bounds.center, wallCheckL.bounds.size, 0f, Vector2.left, 0f, collisionMask);
+
+        if (hit.collider == null)
+            hit = Physics2D.BoxCast(wallCheckR.bounds.center, wallCheckR.bounds.size, 0f, Vector2.right, 0f, collisionMask);
+
+        if (hit.collider != null)
         {
-            int count = rb2d.Cast(move, contactFilter, hitBuffer, distance + shellRadius);
-            hitBufferList.Clear();
-            for (int i = 0; i < count; i++)
-            {
-                hitBufferList.Add(hitBuffer[i]);
-            }
+            velocity.x *= -1;
+            facingLeft = !facingLeft;
 
-            for (int i = 0; i < hitBufferList.Count; i++)
-            {
-                Vector2 currentNormal = hitBufferList[i].normal;
-                if (Vector2.Angle(currentNormal, Vector2.up) < minGroundNormal)
-                {
-                    grounded = true;
-                    if (yMovement)
-                    {
-                        groundNormal = currentNormal;
-                        currentNormal.x = 0;
-                    }
-                }
-
-                if (yMovement)
-                {
-                    float projection = Vector2.Dot(velocity, currentNormal);
-                    if (projection < 0)
-                    {
-                        velocity.y = 0;
-                    }
-                }
-                else
-                {
-                    //hit wall
-                    currentNormal.x = Mathf.Abs(currentNormal.x);
-                    if (Vector2.Angle(currentNormal, Vector2.right) < minWallNormal)
-                    {
-                        velocity.x *= -1;
-                        facingLeft = !facingLeft;
-
-                        velocity.y += jumpTakeOffSpeed * (Mathf.Abs(velocity.x) / 100);
-                        velocity.x -= Mathf.Sign(velocity.x) * 2 * jumpTakeOffSpeed * (Mathf.Abs(velocity.x) / 100);
-                    }
-                }
-
-                float modifiedDistance = hitBufferList[i].distance - shellRadius;
-
-                if (modifiedDistance < distance)
-                    distance = modifiedDistance;
-            }
+            addVelocity.y += jumpTakeOffSpeed * (Mathf.Abs(velocity.x) / (maxCharge * speed));
+            addVelocity.x -= Mathf.Sign(velocity.x) * 2 * jumpTakeOffSpeed * (Mathf.Abs(velocity.x) / (maxCharge * speed));
         }
-
-        rb2d.position = rb2d.position + move.normalized * distance;
     }
 }
