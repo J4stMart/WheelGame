@@ -17,6 +17,7 @@ public class WheelController : MonoBehaviour
 
     public GameObject sprite;
     public SpriteRenderer arrowSprite; //temporary arrow to easily see which way the player is facing;
+    public GameObject chargeBar;
 
     private Rigidbody2D rb2d;
     private Vector2 velocity; //Current velocity of the wheel
@@ -65,6 +66,8 @@ public class WheelController : MonoBehaviour
                 charge += Time.deltaTime * chargeSpeed;
                 charge = Mathf.Clamp(charge, 0, maxCharge);
                 wheelVelocity = charge * speed;
+
+                chargeBar.transform.localScale = new Vector2(charge / maxCharge, 1);
             }
             else if (Input.GetButtonUp("Left") || Input.GetButtonUp("Right"))
             {
