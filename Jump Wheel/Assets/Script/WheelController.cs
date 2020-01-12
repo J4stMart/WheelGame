@@ -21,7 +21,7 @@ public class WheelController : MonoBehaviour
 
     private Rigidbody2D rb2d;
     private Vector2 velocity; //Current velocity of the wheel
-    private Vector2 addVelocity; //Velocity that needs to be added once
+    private float addYVelocity;
 
     private bool grounded;
     private bool facingLeft; //This one I made to check the orientation the player is facing. True = facing left, False = facing right
@@ -58,6 +58,8 @@ public class WheelController : MonoBehaviour
             sprite.transform.Rotate(Vector3.forward, -wheelVelocity * Time.deltaTime / distanceFullRotation * 360);
 
         arrowSprite.flipY = facingLeft;
+
+        Debug.Log(chargingState);
     }
 
     private void ComputeVelocity()
@@ -91,11 +93,11 @@ public class WheelController : MonoBehaviour
             {
                 if (facingLeft)
                 {
-                    addVelocity.x = -charge * speed;
+                    velocity.x = -charge * speed;
                 }
                 else
                 {
-                    addVelocity.x = charge * speed;
+                    velocity.x = charge * speed;
                 }
 
                 charge = 0;
@@ -106,7 +108,7 @@ public class WheelController : MonoBehaviour
         {
             if (Input.GetButton("Down"))
             {
-                addVelocity.x -= Mathf.Sign(velocity.x) * Time.deltaTime * 30;
+                velocity.x -= Mathf.Sign(velocity.x) * Time.deltaTime * 30;
             }
         }
 
@@ -132,7 +134,7 @@ public class WheelController : MonoBehaviour
         {
             if (velocity.x != 0)
             {
-                addVelocity.x -= Mathf.Sign(velocity.x) * momentumReduction * Time.deltaTime;
+                velocity.x -= Mathf.Sign(velocity.x) * momentumReduction * Time.deltaTime;
                 wheelVelocity = velocity.x;
             }
             else
@@ -143,22 +145,20 @@ public class WheelController : MonoBehaviour
 
             if (Input.GetButtonDown("Jump"))
             {
-                addVelocity.y = jumpTakeOffSpeed;
-            }
-
-            
+                addYVelocity = jumpTakeOffSpeed;
+            }            
         }
         else
         {
-            addVelocity.x -= Mathf.Sign(velocity.x) * momentumReduction / 5 * Time.deltaTime;
+            velocity.x -= Mathf.Sign(velocity.x) * momentumReduction / 5 * Time.deltaTime;
         }
     }
 
     private void FixedUpdate()
     {
-        rb2d.velocity = new Vector2(velocity.x + addVelocity.x, rb2d.velocity.y + addVelocity.y);
+        rb2d.velocity = new Vector2(velocity.x, rb2d.velocity.y + addYVelocity);
         velocity = rb2d.velocity;
-        addVelocity = Vector2.zero;
+        addYVelocity = 0;
     }
 
     private void CheckGrounded()
@@ -180,8 +180,8 @@ public class WheelController : MonoBehaviour
             velocity.x *= -1;
             facingLeft = !facingLeft;
 
-            addVelocity.y += jumpTakeOffSpeed * (Mathf.Abs(velocity.x) / (maxCharge * speed));
-            addVelocity.x -= Mathf.Sign(velocity.x) * 2 * jumpTakeOffSpeed * (Mathf.Abs(velocity.x) / (maxCharge * speed));
+            addYVelocity += jumpTakeOffSpeed * (Mathf.Abs(velocity.x) / (maxCharge * speed));
+            velocity.x -= Mathf.Sign(velocity.x) * 2 * jumpTakeOffSpeed * (Mathf.Abs(velocity.x) / (maxCharge * speed));
         }
     }
 }
