@@ -129,13 +129,13 @@ public class WheelController : MonoBehaviour
             }
         }
 
-        if (Input.GetButtonDown("Left") && (grounded || velocity.x == 0))
+        if (Input.GetButtonDown("Left") && velocity.x == 0)
         {
             facingLeft = true;
 
             velocity.x = -Mathf.Abs(velocity.x);
         }
-        else if (Input.GetButtonDown("Right") && (grounded || velocity.x == 0))
+        else if (Input.GetButtonDown("Right") && velocity.x == 0)
         {
             facingLeft = false;
 
