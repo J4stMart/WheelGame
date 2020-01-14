@@ -19,6 +19,9 @@ public class WheelController : MonoBehaviour
     public SpriteRenderer arrowSprite; //temporary arrow to easily see which way the player is facing;
     public GameObject chargeBar;
 
+    public bool jumpEnabled = true;
+    public bool brakeEnabled = true;
+
     private Rigidbody2D rb2d;
     private Vector2 velocity; //Current velocity of the wheel
     private float addYVelocity;
@@ -45,6 +48,17 @@ public class WheelController : MonoBehaviour
 
         var circleCollider = GetComponent<CircleCollider2D>();
         distanceFullRotation = 2 * circleCollider.bounds.extents[0] * Mathf.PI;
+
+        var box = GameObject.FindWithTag("TutorialStart").GetComponent<BoxCollider2D>();
+
+        if(box)
+        {
+            if(box.bounds.Contains(transform.position))
+            {
+                jumpEnabled = false;
+                brakeEnabled = false;
+            }
+        }
     }
 
     void Update()
@@ -106,7 +120,7 @@ public class WheelController : MonoBehaviour
         }
         else
         {
-            if (Input.GetButton("Down"))
+            if (Input.GetButton("Down") && brakeEnabled)
             {
                 velocity.x -= Mathf.Sign(velocity.x) * Time.deltaTime * 30;
             }
@@ -143,7 +157,7 @@ public class WheelController : MonoBehaviour
                     chargingState = ChargingState.CanCharge;
             }
 
-            if (Input.GetButtonDown("Jump"))
+            if (Input.GetButtonDown("Jump") && jumpEnabled)
             {
                 addYVelocity = jumpTakeOffSpeed;
             }            
