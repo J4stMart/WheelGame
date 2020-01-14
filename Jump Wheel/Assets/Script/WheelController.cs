@@ -35,9 +35,9 @@ public class WheelController : MonoBehaviour
 
     enum ChargingState
     {
-         CantCharge,
-         CanCharge,
-         IsCharging
+        CantCharge,
+        CanCharge,
+        IsCharging
     }
 
     private ChargingState chargingState = ChargingState.CantCharge;
@@ -51,9 +51,9 @@ public class WheelController : MonoBehaviour
 
         var box = GameObject.FindWithTag("TutorialStart").GetComponent<BoxCollider2D>();
 
-        if(box)
+        if (box)
         {
-            if(box.bounds.Contains(transform.position))
+            if (box.bounds.Contains(transform.position))
             {
                 jumpEnabled = false;
                 brakeEnabled = false;
@@ -122,7 +122,10 @@ public class WheelController : MonoBehaviour
         {
             if (Input.GetButton("Down") && brakeEnabled)
             {
-                velocity.x -= Mathf.Sign(velocity.x) * Time.deltaTime * 30;
+                Vector2 brakeVelocity = velocity.normalized * Time.deltaTime * 30;
+                velocity.x -= brakeVelocity.x;
+                if (brakeVelocity.y > 0)
+                    addYVelocity -= brakeVelocity.y;
             }
         }
 
@@ -160,7 +163,7 @@ public class WheelController : MonoBehaviour
             if (Input.GetButtonDown("Jump") && jumpEnabled)
             {
                 addYVelocity = jumpTakeOffSpeed;
-            }            
+            }
         }
         else
         {
