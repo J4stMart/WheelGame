@@ -33,6 +33,8 @@ public class WheelController : MonoBehaviour
     private float distanceFullRotation;
     private float wheelVelocity; //for visual rotation
 
+    private Vector3 spawnLocation;
+
     enum ChargingState
     {
         CantCharge,
@@ -176,6 +178,11 @@ public class WheelController : MonoBehaviour
         rb2d.velocity = new Vector2(velocity.x, rb2d.velocity.y + addYVelocity);
         velocity = rb2d.velocity;
         addYVelocity = 0;
+    }
+
+    private void Respawn()
+    {
+
     }
 
     private void CheckGrounded()
