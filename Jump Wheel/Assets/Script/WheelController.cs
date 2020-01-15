@@ -90,11 +90,10 @@ public class WheelController : MonoBehaviour
 
         if (velocity.x == 0)
         {
-            if ((Input.GetButtonDown("Left") || Input.GetButtonDown("Right")) && chargingState == ChargingState.CanCharge)
+            if ((Input.GetButton("Left") || Input.GetButton("Right")) && chargingState == ChargingState.CanCharge)
             {
                 chargingState = ChargingState.IsCharging;
             }
-
             if ((Input.GetButton("Left") || Input.GetButton("Right")) && chargingState == ChargingState.IsCharging)
             {
                 charge += Time.deltaTime * (chargeSpeed + Mathf.Sqrt(charge));
@@ -133,13 +132,13 @@ public class WheelController : MonoBehaviour
             }
         }
 
-        if (Input.GetButtonDown("Left") && velocity.x == 0)
+        if (Input.GetButton("Left") && (velocity.x == 0 || grounded))
         {
             facingLeft = true;
 
             velocity.x = -Mathf.Abs(velocity.x);
         }
-        else if (Input.GetButtonDown("Right") && velocity.x == 0)
+        else if (Input.GetButton("Right") && (velocity.x == 0 || grounded))
         {
             facingLeft = false;
 
