@@ -34,6 +34,7 @@ public class WheelController : MonoBehaviour
     private float wheelVelocity; //for visual rotation
 
     private Vector3 spawnLocation;
+    private GameObject lastFlag;
 
     enum ChargingState
     {
@@ -149,7 +150,7 @@ public class WheelController : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.R))
         {
-            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+            Respawn();
         }
 
         if (grounded)
@@ -223,5 +224,17 @@ public class WheelController : MonoBehaviour
             addYVelocity += jumpTakeOffSpeed * (Mathf.Abs(velocity.x) / (maxCharge * speed));
             velocity.x -= Mathf.Sign(velocity.x) * 2 * jumpTakeOffSpeed * (Mathf.Abs(velocity.x) / (maxCharge * speed));
         }
+    }
+
+    public void SetSpawnpoint(Vector3 position, GameObject flag)
+    {
+        if(lastFlag)
+        {
+            lastFlag.SetActive(false);
+        }
+
+        flag.SetActive(true);
+        lastFlag = flag;
+        spawnLocation = position;
     }
 }
