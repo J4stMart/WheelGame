@@ -90,6 +90,8 @@ public class WheelController : MonoBehaviour
 
         if (velocity.x == 0)
         {
+            chargeBar.transform.parent.gameObject.SetActive(true);
+
             if ((Input.GetButton("Left") || Input.GetButton("Right")) && chargingState == ChargingState.CanCharge)
             {
                 chargingState = ChargingState.IsCharging;
@@ -119,6 +121,8 @@ public class WheelController : MonoBehaviour
 
                 charge = 0;
                 chargingState = ChargingState.CantCharge;
+                chargeBar.transform.localScale = new Vector2(0, 1);
+                chargeBar.transform.parent.gameObject.SetActive(false);
             }
         }
         else
