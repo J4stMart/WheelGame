@@ -61,6 +61,8 @@ public class WheelController : MonoBehaviour
                 brakeEnabled = false;
             }
         }
+
+        spawnLocation = transform.position;
     }
 
     void Update()
@@ -182,7 +184,17 @@ public class WheelController : MonoBehaviour
 
     private void Respawn()
     {
+        transform.position = spawnLocation;
+        rb2d.velocity = Vector2.zero;
+        velocity = Vector2.zero;
+    }
 
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        if(collision.gameObject.tag == "Spikes")
+        {
+            Respawn();
+        }
     }
 
     private void CheckGrounded()
